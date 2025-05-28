@@ -1,3 +1,4 @@
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
@@ -11,10 +12,16 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
+type Roles = {
+    id: number;
+    name: string;
+}
+
 type User = {
     id: number;
     name: string;
     email: string;
+    roles: Roles[];
 };
 
 type IndexProps = {
@@ -47,6 +54,7 @@ export default function Index({ users }: IndexProps) {
                                 <TableHead className="w-[100px]">ID</TableHead>
                                 <TableHead>Name</TableHead>
                                 <TableHead>Email</TableHead>
+                                <TableHead>Role</TableHead>
                                 <TableHead className="text-right">Action</TableHead>
                             </TableRow>
                         </TableHeader>
@@ -56,6 +64,11 @@ export default function Index({ users }: IndexProps) {
                                     <TableCell className="font-medium">{user.id}</TableCell>
                                     <TableCell>{user.name}</TableCell>
                                     <TableCell>{user.email}</TableCell>
+                                    <TableCell>
+                                        {user.roles.map((role) => (
+                                            <Badge key={role.id} variant="outline">{role.name}</Badge>
+                                        ))}
+                                    </TableCell>
                                     <TableCell className="text-right">
                                         <Link
                                             href={route('users.show', user.id)}

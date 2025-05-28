@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
+use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
@@ -14,7 +16,7 @@ class UserController extends Controller
      */
     public function index()
     {
-        $users = User::all();
+        $users = User::with("roles")->get();
         return Inertia::render("Users/Index", [
             "users" => $users
         ]);
@@ -25,7 +27,10 @@ class UserController extends Controller
      */
     public function create()
     {
-        return Inertia::render("Users/Create");
+        $roles = Role::pluck("name")->toArray();
+        return Inertia::render("Users/Create", [
+            "roles" => $roles
+        ]);
     }
 
     /**
@@ -39,12 +44,13 @@ class UserController extends Controller
             'password' => 'required|string|min:8',
         ]);
 
-        User::create(
+        $user = User::create(
             $request->only(["name", "email"])
-
                 +
                 ["password" => Hash::make($request->password)]
         );
+
+        $user->syncRoles($request->roles);
 
         return to_route('users.index');
     }
@@ -64,8 +70,11 @@ class UserController extends Controller
      */
     public function edit(User $user)
     {
+        $roles = Role::pluck("name")->toArray();
         return Inertia::render("Users/Edit", [
-            "user" => $user
+            "user" => $user,
+            "userRoles" => $user->roles()->pluck("name"),
+            "roles" => $roles
         ]);
     }
 
@@ -76,17 +85,19 @@ class UserController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
+            'email' => ['required', Rule::unique('users', 'email')->ignore($user->id)],
         ]);
 
         $user->name = $request->name;
         $user->email = $request->email;
 
-        if($request->password) {
+        if ($request->password) {
             $user->password = Hash::make($request->password);
         }
 
         $user->save();
+
+        $user->syncRoles($request->roles);
 
         return to_route('users.index');
     }

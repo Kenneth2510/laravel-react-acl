@@ -40,3 +40,7 @@ refer to
 
 
 After CRUD, proceed to updating User by adding role selection
+
+
+on user.php model, add this
+use Spatie\Permission\Traits\HasRoles;

@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/app-layout';
@@ -7,42 +8,63 @@ import { type BreadcrumbItem } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
 import React from 'react';
 
+type Role = {
+    id: number;
+    name: string;
+}
+
 type User = {
     id: number;
     name: string;
     email: string;
     password: string;
+    roles: Role[];
 }
 
-type EditProps = {
+type EditUserProps = {
     user: User;
+    userRoles: string[];
+    roles: string[];
 }
 
-export default function Edit({ user }: EditProps) {
+export default function Edit({ user, userRoles, roles }: EditUserProps) {
     const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Users',
-        href: '/users',
-    },
-    {
-        title: 'Edit User',
-        href: `/users/${user.id}/edit`,
-    },
-];
+        {
+            title: 'Users',
+            href: '/users',
+        },
+        {
+            title: 'Edit User',
+            href: `/users/${user.id}/edit`,
+        },
+    ];
 
     type UserFormData = {
         name: string;
         email: string;
         password: string;
+        roles: string[];
     }
 
     const { data, setData, put, processing, errors } = useForm<UserFormData>({
-        name: user.name,
-        email: user.email,
-        password: user.password,
+        name: user.name || "",
+        email: user.email || "",
+        password: user.password || "",
+        roles: userRoles || []
     });
 
-    function submit(e:React.FormEvent<HTMLFormElement>) {
+    function handleCheckboxChange(role: string, checked: boolean) {
+        if (checked) {
+            setData('roles', [...data.roles, role]);
+        } else {
+            setData(
+                'roles',
+                data.roles.filter((name) => name !== role),
+            );
+        }
+    }
+
+    function submit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
         put(route('users.update', user.id));
     }
@@ -100,10 +122,29 @@ export default function Edit({ user }: EditProps) {
                                         />
                                         {errors.password && <p className="mt-1 text-sm text-red-500">{errors.password}</p>}
                                     </div>
+                                    <div className="flex flex-col space-y-1.5">
+                                        <Label htmlFor="roles">Roles</Label>
+                                        {roles.map((role) => (
+                                            <div key={role} className="flex items-center space-x-2">
+                                                <Checkbox
+                                                    id={role}
+                                                    value={role}
+                                                    checked={data.roles.includes(role)}
+                                                    onCheckedChange={(checked: boolean) => handleCheckboxChange(role, checked)}
+                                                />
+                                                <label
+                                                    htmlFor={role}
+                                                    className="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                                >
+                                                    {role}
+                                                </label>
+                                            </div>
+                                        ))}
+                                        {errors.roles && <p className="mt-1 text-sm text-red-500">{errors.roles}</p>}
+                                    </div>
                                 </div>
                             </CardContent>
                             <CardFooter className="flex justify-between">
-                                <Button variant="outline">Cancel</Button>
                                 <Button type="submit" disabled={processing}>
                                     {processing ? 'Submitting...' : 'Submit'}
                                 </Button>
