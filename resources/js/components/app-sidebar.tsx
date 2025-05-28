@@ -6,24 +6,7 @@ import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
 import { BookOpen, Folder, LayoutGrid, UserCog, Users } from 'lucide-react';
 import AppLogo from './app-logo';
-
-const mainNavItems: NavItem[] = [
-    {
-        title: 'Dashboard',
-        href: '/dashboard',
-        icon: LayoutGrid,
-    },
-    {
-        title: 'Users',
-        href: '/users',
-        icon: Users,
-    },
-    {
-        title: 'Roles',
-        href: '/roles',
-        icon: UserCog,
-    },
-];
+import { canAny } from '@/lib/can';
 
 const footerNavItems: NavItem[] = [
     {
@@ -39,6 +22,24 @@ const footerNavItems: NavItem[] = [
 ];
 
 export function AppSidebar() {
+    const mainNavItems: NavItem[] = [
+        {
+            title: 'Dashboard',
+            href: '/dashboard',
+            icon: LayoutGrid,
+        },
+        ...(
+            canAny(['users.view', 'users.edit', 'users.create', 'users.delete'])
+                ? [{ title: 'Users', href: '/users', icon: Users }]
+                : []
+        ),
+        ...(
+            canAny(['roles.view', 'roles.edit', 'roles.create', 'roles.delete'])
+                ? [{ title: 'Roles', href: '/roles', icon: UserCog }]
+                : []
+        ),
+    ];
+
     return (
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>

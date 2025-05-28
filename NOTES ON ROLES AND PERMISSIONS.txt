@@ -44,3 +44,92 @@ After CRUD, proceed to updating User by adding role selection
 
 on user.php model, add this
 use Spatie\Permission\Traits\HasRoles;
+
+
+Update auth in HandleInertiaRequests.php
+            'auth' => [
+                'user' => $request->user(),
+                'permissions' => fn () => $request->user()?->getAllPermissions()->pluck("name") ?? [],
+            ],
+
+
+        
+create file can.ts on resources/js/lib
+
+import { usePage } from "@inertiajs/react";
+
+export function can(permission: string): boolean {
+    const { auth } = usePage().props as {
+        auth: {
+            permissions: string[]
+        };
+    };
+
+    return auth.permissions.includes(permission);
+}
+
+export function canAny(permissions: string[]): boolean {
+    const { auth } = usePage().props as {
+        auth: {
+            permissions: string[];
+        };
+    };
+
+    return permissions.some(permission => auth.permissions.includes(permission));
+}
+
+add import to the jsx file
+import { can } from '@/lib/can';
+
+then you may now attach {can() &&} to the jsx
+
+
+add this to the middleware on bootstrap/app.php
+
+        $middleware->alias([
+            'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
+            'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
+            'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
+        ]);
+
+then you can update the routes in the web.php
+    Route::resource('roles', RoleController::class)
+        ->only(["create", "store"])
+        ->middleware("permission:roles.create");
+
+    Route::resource('roles', RoleController::class)
+        ->only(["edit", "update"])
+        ->middleware("permission:roles.edit");
+
+    Route::resource('roles', RoleController::class)
+        ->only(["destroy"])
+        ->middleware("permission:roles.delete");
+
+    Route::resource('roles', RoleController::class)
+        ->only(["index", "show"])
+        ->middleware("permission:roles.view|roles.create|roles.edit|roles.delete");
+
+
+Additional, for the sidebar or navbar, you can do this so that only links with allowed permissions are displayed
+
+in app-sidebar.tsx
+import { canAny } from '@/lib/can';
+
+export function AppSidebar() {
+    const mainNavItems: NavItem[] = [
+        {
+            title: 'Dashboard',
+            href: '/dashboard',
+            icon: LayoutGrid,
+        },
+        ...(
+            canAny(['users.view', 'users.edit', 'users.create', 'users.delete'])
+                ? [{ title: 'Users', href: '/users', icon: Users }]
+                : []
+        ),
+        ...(
+            canAny(['roles.view', 'roles.edit', 'roles.create', 'roles.delete'])
+                ? [{ title: 'Roles', href: '/roles', icon: UserCog }]
+                : []
+        ),
+    ];

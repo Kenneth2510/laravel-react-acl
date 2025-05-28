@@ -4,6 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
+import { can } from '@/lib/can';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -38,14 +39,16 @@ export default function Index({ roles }: IndexProps) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Roles" />
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
-                <div>
-                    <Link
-                        href="/roles/create"
-                        className="cursor-pointer rounded-lg bg-blue-600 px-3 py-2 text-xs font-medium text-white hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 focus:outline-none"
-                    >
-                        Create
-                    </Link>
-                </div>
+                {can('roles.create') &&
+                    <div>
+                        <Link
+                            href="/roles/create"
+                            className="cursor-pointer rounded-lg bg-blue-600 px-3 py-2 text-xs font-medium text-white hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 focus:outline-none"
+                        >
+                            Create
+                        </Link>
+                    </div>
+                }
                 <div className="mt-3 overflow-x-auto">
                     <Table>
                         <TableHeader>
@@ -57,7 +60,7 @@ export default function Index({ roles }: IndexProps) {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {roles.map(({id, name, permissions}) => (
+                            {roles.map(({ id, name, permissions }) => (
                                 <TableRow key={id}>
                                     <TableCell className="font-medium">{id}</TableCell>
                                     <TableCell>{name}</TableCell>
@@ -73,18 +76,22 @@ export default function Index({ roles }: IndexProps) {
                                         >
                                             View
                                         </Link>
-                                        <Link
-                                            href={route('roles.edit', id)}
-                                            className="mx-1 cursor-pointer rounded-lg bg-blue-600 px-3 py-2 text-xs font-medium text-white hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 focus:outline-none"
-                                        >
-                                            Edit
-                                        </Link>
-                                        <Button
-                                            onClick={() => handleDelete(id)}
-                                            className="ml-2 cursor-pointer rounded-lg bg-red-600 px-3 py-2 text-xs font-medium text-white hover:bg-red-700 focus:ring-4 focus:ring-red-300 focus:outline-none"
-                                        >
-                                            Delete
-                                        </Button>
+                                        {can('roles.edit') &&
+                                            <Link
+                                                href={route('roles.edit', id)}
+                                                className="mx-1 cursor-pointer rounded-lg bg-blue-600 px-3 py-2 text-xs font-medium text-white hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 focus:outline-none"
+                                            >
+                                                Edit
+                                            </Link>
+                                        }
+                                        {can('roles.delete') &&
+                                            <Button
+                                                onClick={() => handleDelete(id)}
+                                                className="ml-2 cursor-pointer rounded-lg bg-red-600 px-3 py-2 text-xs font-medium text-white hover:bg-red-700 focus:ring-4 focus:ring-red-300 focus:outline-none"
+                                            >
+                                                Delete
+                                            </Button>
+                                        }
                                     </TableCell>
                                 </TableRow>
                             ))}
