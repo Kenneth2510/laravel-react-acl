@@ -31,3 +31,12 @@ public function run(): void
 php artisan db:seed PermissionSeeder
 
 do crud for Roles with preset permissions
+
+refer to 
+    Controller: RoleController
+    Roles/Create.tsx
+    Roles/Edit.tsx
+    Roles/Delete.tsx
+
+
+After CRUD, proceed to updating User by adding role selection

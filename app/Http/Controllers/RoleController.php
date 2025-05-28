@@ -51,9 +51,12 @@ class RoleController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Role $role)
     {
-        //
+        return Inertia::render('Roles/Show', [
+            "role" => $role,
+            "permissions" => $role->permissions()->pluck("name"),
+        ]);
     }
 
     /**
@@ -63,6 +66,7 @@ class RoleController extends Controller
     {
         return Inertia::render("Roles/Edit", [
             "role" => $role,
+            "rolePermissions" => $role->permissions()->pluck("name"),
             "permissions" => Permission::pluck("name")->toArray(),
         ]);
     }
@@ -70,16 +74,28 @@ class RoleController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Role $role)
     {
-        //
+        $request->validate([
+            "name" => "required",
+            "permissions" => "required",
+        ]);
+
+        $role->name = $request->name;
+        $role->save();
+
+        $role->syncPermissions($request->permissions);
+
+        return to_route("roles.index");
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Role $role)
     {
-        //
+        $role->delete();
+
+        return to_route("roles.index");
     }
 }

@@ -36,7 +36,7 @@ export default function Create({ permissions }: { permissions: string[] }) {
         } else {
             setData(
                 'permissions',
-                data.permissions.filter((p) => p !== permission),
+                data.permissions.filter((name) => name !== permission),
             );
         }
     }
@@ -52,7 +52,7 @@ export default function Create({ permissions }: { permissions: string[] }) {
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
                 <div>
                     <Link
-                        href="/users"
+                        href="/roles"
                         className="cursor-pointer rounded-lg bg-blue-600 px-3 py-2 text-xs font-medium text-white hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 focus:outline-none"
                     >
                         Back
@@ -95,7 +95,6 @@ export default function Create({ permissions }: { permissions: string[] }) {
                                 </div>
                             </CardContent>
                             <CardFooter className="flex justify-between">
-                                <Button variant="outline">Cancel</Button>
                                 <Button type="submit" disabled={processing}>
                                     {processing ? 'Submitting...' : 'Submit'}
                                 </Button>

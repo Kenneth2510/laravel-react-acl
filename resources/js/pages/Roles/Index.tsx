@@ -12,9 +12,15 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
+type Permission = {
+    id: number;
+    name: string;
+}
+
 type Role = {
     id: number;
     name: string;
+    permissions: Permission[];
 };
 
 type IndexProps = {
